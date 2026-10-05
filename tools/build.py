@@ -11,7 +11,7 @@ ROOT = pathlib.Path(__file__).resolve().parent.parent
 OUT = ROOT / "site"
 
 # Public address of the site. Change this if you connect a custom domain.
-SITE_URL = "https://goosepk7.github.io/FlipMath/"
+SITE_URL = "https://flipmath.me/"
 
 PLATFORM_NAV = [("ebay", "eBay"), ("poshmark", "Poshmark"), ("mercari", "Mercari"), ("depop", "Depop"), ("etsy", "Etsy")]
 
