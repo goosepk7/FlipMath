@@ -10,6 +10,9 @@ import shutil
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 OUT = ROOT / "site"
 
+# Public address of the site. Change this if you connect a custom domain.
+SITE_URL = "https://goosepk7.github.io/FlipMath/"
+
 PLATFORM_NAV = [("ebay", "eBay"), ("poshmark", "Poshmark"), ("mercari", "Mercari"), ("depop", "Depop"), ("etsy", "Etsy")]
 
 PAGES = {
@@ -91,9 +94,13 @@ TEMPLATE = """<!doctype html>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{title}</title>
 <meta name="description" content="{description}">
+<link rel="canonical" href="{canonical}">
+<meta property="og:url" content="{canonical}">
 <meta property="og:title" content="{title}">
 <meta property="og:description" content="{description}">
 <meta property="og:type" content="website">
+<meta property="og:image" content="{site}assets/og.png">
+<meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#0f3d2e">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%230f3d2e'/><text x='32' y='45' font-size='38' font-family='Arial' font-weight='bold' text-anchor='middle' fill='%23b6f09c'>%24</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -186,6 +193,7 @@ TEMPLATE = """<!doctype html>
       <label>Most annoying part of tracking your flips? <small>optional</small><textarea name="pain" rows="2"></textarea></label>
       <input type="text" name="_gotcha" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
       <input type="hidden" name="page" value="{slug}">
+      <input type="hidden" name="source" value="">
       <button type="submit" class="primary">Join the waitlist</button>
       <p id="waitlist-status" role="status"></p>
     </form>
@@ -232,11 +240,17 @@ def build():
             nav=nav,
             faq=faq,
             slug=slug or "home",
+            site=SITE_URL,
+            canonical=SITE_URL + (slug + "/" if slug else ""),
         )
         target = OUT / slug / "index.html" if slug else OUT / "index.html"
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(out)
-    (OUT / "robots.txt").write_text("User-agent: *\nAllow: /\n")
+    (OUT / "robots.txt").write_text("User-agent: *\nAllow: /\nSitemap: {}sitemap.xml\n".format(SITE_URL))
+    urls = "".join("<url><loc>{}{}</loc></url>".format(SITE_URL, slug + "/" if slug else "") for slug in PAGES)
+    (OUT / "sitemap.xml").write_text(
+        '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' + urls + "</urlset>\n"
+    )
     print("Built", len(PAGES), "pages into", OUT)
 
 

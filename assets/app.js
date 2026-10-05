@@ -269,9 +269,23 @@
     if (checked && CONFIG.feesCheckedOn) checked.textContent = CONFIG.feesCheckedOn;
   }
 
-  function setupWaitlist() {
+  // Remember which ad or post brought the visitor (?utm_source=...), so waitlist
+  // signups show where they came from. Read before the calculator rewrites the URL.
+  function captureSource() {
+    var params = new URLSearchParams(location.search);
+    var source = [params.get("utm_source"), params.get("utm_campaign"), params.get("utm_content")]
+      .filter(Boolean).join(" / ");
+    try {
+      if (source) sessionStorage.setItem("flipmath.source", source);
+      else source = sessionStorage.getItem("flipmath.source") || "";
+    } catch (e) {}
+    return source || document.referrer || "direct";
+  }
+
+  function setupWaitlist(source) {
     var form = $("#waitlist-form");
     if (!form) return;
+    if (form.elements.source) form.elements.source.value = source;
     var status = $("#waitlist-status");
     if (!CONFIG.waitlistEndpoint) {
       status.textContent = "The waitlist opens in a few days. Check back soon.";
@@ -331,8 +345,9 @@
     module.exports = { calculate: calculate, DEFAULT_FEES: DEFAULT_FEES, PLATFORMS: PLATFORMS };
   } else {
     document.addEventListener("DOMContentLoaded", function () {
+      var source = captureSource();
       init();
-      setupWaitlist();
+      setupWaitlist(source);
     });
   }
 })();
