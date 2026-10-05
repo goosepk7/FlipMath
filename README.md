@@ -2,7 +2,7 @@
 
 A free profit calculator for resellers. Enter one sale price and see your real profit after fees and shipping on eBay, Poshmark, Mercari, Depop and Etsy, plus the most you should pay for the item. The page also collects a waitlist for **FlipMath Pro**, a planned $6/month profit and tax tracker.
 
-Live site (after GitHub Pages is turned on): https://goosepk7.github.io/Money-tool/
+Live site (after GitHub Pages is turned on): https://goosepk7.github.io/FlipMath/
 
 ## What's here
 

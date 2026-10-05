@@ -94,76 +94,99 @@ TEMPLATE = """<!doctype html>
 <meta property="og:title" content="{title}">
 <meta property="og:description" content="{description}">
 <meta property="og:type" content="website">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>%24</text></svg>">
+<meta name="theme-color" content="#0f3d2e">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%230f3d2e'/><text x='32' y='45' font-size='38' font-family='Arial' font-weight='bold' text-anchor='middle' fill='%23b6f09c'>%24</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="{base}assets/style.css">
 <script src="{base}assets/config.js"></script>
 <script src="{base}assets/app.js"></script>
 </head>
 <body data-platform="{platform}">
+<div class="top">
 <header class="site"><div class="wrap">
-  <a class="logo" href="{home}">Flip<span>Math</span></a>
-  <nav class="platforms" aria-label="Fee calculators">{nav}</nav>
+  <a class="logo" href="{home}"><span class="mark">$</span><span>Flip<b>Math</b></span></a>
+  <a class="nav-cta" href="#pro">Get Pro early</a>
 </div></header>
 
-<main class="wrap">
+<section class="hero wrap">
+  <p class="eyebrow">Free reseller profit calculator</p>
   <h1>{h1}</h1>
   <p class="lede">{lede}</p>
+  <ul class="trust"><li>Free forever</li><li>No signup</li><li>Nothing leaves your browser</li></ul>
+  <nav class="platforms" aria-label="Fee calculators">{nav}</nav>
+</section>
+</div>
 
-  <form id="calc" class="card" autocomplete="off">
+<main class="wrap app">
+  <form id="calc" class="panel inputs" autocomplete="off">
+    <div class="examples"><span>Try:</span>
+      <button type="button" class="chip" data-example='{{"price":12,"shipCharged":0,"shipCost":5,"cost":2,"other":0.5}}'>$12 tee</button>
+      <button type="button" class="chip" data-example='{{"price":45,"shipCharged":0,"shipCost":9,"cost":8,"other":0.5}}'>$45 jacket</button>
+      <button type="button" class="chip" data-example='{{"price":120,"shipCharged":0,"shipCost":14,"cost":40,"other":1}}'>$120 sneakers</button>
+    </div>
+    <h2 class="group">The sale</h2>
     <div class="grid">
-      <label>Sale price ($)<input name="price" type="number" step="0.01" min="0" inputmode="decimal" value="40"></label>
-      <label>Shipping charged to buyer ($)<input name="shipCharged" type="number" step="0.01" min="0" inputmode="decimal" value="0"></label>
-      <label>Your shipping cost ($)<small>label you pay for</small><input name="shipCost" type="number" step="0.01" min="0" inputmode="decimal" value="8"></label>
-      <label>What you paid ($)<input name="cost" type="number" step="0.01" min="0" inputmode="decimal" value="6"></label>
-      <label>Supplies and other ($)<small>poly mailer, tape</small><input name="other" type="number" step="0.01" min="0" inputmode="decimal" value="0.5"></label>
-      <label>eBay Promoted rate (%)<input name="adRate" type="number" step="0.1" min="0" inputmode="decimal" value="0"></label>
-      <label>Target profit ($)<small>for max buy price</small><input name="target" type="number" step="0.01" min="0" inputmode="decimal" value="15"></label>
+      <label>Sale price<span class="money"><input name="price" type="number" step="0.01" min="0" inputmode="decimal" value="40"></span></label>
+      <label>Shipping you charge<span class="money"><input name="shipCharged" type="number" step="0.01" min="0" inputmode="decimal" value="0"></span></label>
+    </div>
+    <h2 class="group">Your costs</h2>
+    <div class="grid">
+      <label>What you paid<span class="money"><input name="cost" type="number" step="0.01" min="0" inputmode="decimal" value="6"></span></label>
+      <label>Shipping label<span class="money"><input name="shipCost" type="number" step="0.01" min="0" inputmode="decimal" value="8"></span></label>
+      <label>Supplies<span class="money"><input name="other" type="number" step="0.01" min="0" inputmode="decimal" value="0.5"></span></label>
+      <label>eBay ad rate<span class="pct"><input name="adRate" type="number" step="0.1" min="0" inputmode="decimal" value="0"></span></label>
+    </div>
+    <h2 class="group">Your goal</h2>
+    <div class="grid">
+      <label>Profit you want<small>sets your max buy price</small><span class="money"><input name="target" type="number" step="0.01" min="0" inputmode="decimal" value="15"></span></label>
     </div>
   </form>
 
-  {focus}
-
-  <section class="card" aria-live="polite">
-    <p id="summary"></p>
-    <div class="table-scroll">
-      <table>
-        <thead><tr><th>Platform</th><th>Fees</th><th>Profit</th><th class="col-margin">Margin</th><th>Max buy</th></tr></thead>
-        <tbody id="results-body"></tbody>
-      </table>
+  <section class="results" aria-live="polite">
+    <div id="hero-result" class="hero-result"></div>
+    <div class="panel">
+      <h2 class="group">All platforms, best first</h2>
+      <ol id="results-list" class="results-list"></ol>
+      <p class="fine">Profit is what you keep after fees, your label, supplies and what you paid. Tap a platform for the fee breakdown. Sales tax not included.</p>
+      <button type="button" class="ghost" id="share">Copy link to these numbers</button>
     </div>
-    <p class="muted">Profit is what you keep after fees, your shipping label, supplies and what you paid. Max buy is the most you can pay and still make your target profit. Sales tax is not included.</p>
-    <button type="button" class="secondary" id="share">Copy link to these numbers</button>
   </section>
+</main>
 
-  <details class="card">
+<div class="wrap">
+  <details class="panel settings">
     <summary>Fee settings</summary>
-    <p class="muted">Default US fees last checked <span id="fees-checked"></span>. Change any number to match your account; it's saved on this device only.</p>
+    <p class="fine">Default US fees last checked <span id="fees-checked"></span>. Change any number to match your account; it's saved on this device only.</p>
     <div id="fee-settings-body"></div>
-    <button type="button" class="secondary" id="reset-fees">Reset to defaults</button>
+    <button type="button" class="ghost" id="reset-fees">Reset to defaults</button>
   </details>
 
-  <section class="card pro" id="pro">
-    <h2>Coming soon: FlipMath Pro</h2>
-    <p>Stop guessing at tax time. Pro keeps a running record of every flip, from what you paid to what it sold for, so you know your real profit and can prove it.</p>
-    <ul>
-      <li>Log a buy in seconds from your phone, with a receipt photo</li>
-      <li>Import your eBay, Poshmark, Mercari, Depop and Etsy sales reports</li>
-      <li>See profit by month, by platform and by sourcing spot</li>
-      <li>One-click year-end report with cost of goods, fees, shipping and mileage, ready for your tax preparer or 1099-K</li>
-    </ul>
-    <p>Planned price: <strong>$6 a month</strong>. People on the waitlist get the first 3 months free.</p>
-    <form id="waitlist-form">
+  <section class="pro" id="pro">
+    <div class="pro-copy">
+      <p class="eyebrow">Coming soon</p>
+      <h2>FlipMath Pro: know your real profit at tax time</h2>
+      <p>Your 1099-K shows every dollar you sold, not what you kept. Pro keeps a running record of every flip so you can prove your costs and stop overpaying.</p>
+      <ul class="checks">
+        <li>Log a buy in seconds from your phone, with a receipt photo</li>
+        <li>Import sales reports from eBay, Poshmark, Mercari, Depop and Etsy</li>
+        <li>See profit by month, platform and sourcing spot</li>
+        <li>One-click year-end report for your tax preparer</li>
+      </ul>
+      <p class="price"><strong>$6/month</strong> &middot; waitlist gets 3 months free</p>
+    </div>
+    <form id="waitlist-form" class="pro-form">
       <label>Email<input type="email" name="email" required placeholder="you@example.com"></label>
-      <p><strong>Would you pay $6 a month for this?</strong></p>
-      <div class="radio-row">
+      <fieldset class="radio-row"><legend>Would you pay $6 a month for this?</legend>
         <label><input type="radio" name="would_pay" value="yes"> Yes</label>
         <label><input type="radio" name="would_pay" value="maybe"> Maybe</label>
-        <label><input type="radio" name="would_pay" value="no"> No, free only</label>
-      </div>
-      <label style="margin-top:12px">What's the most annoying part of tracking your flips? <small>optional</small><textarea name="pain" rows="2"></textarea></label>
+        <label><input type="radio" name="would_pay" value="no"> Free only</label>
+      </fieldset>
+      <label>Most annoying part of tracking your flips? <small>optional</small><textarea name="pain" rows="2"></textarea></label>
       <input type="text" name="_gotcha" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
       <input type="hidden" name="page" value="{slug}">
-      <p><button type="submit">Join the waitlist</button></p>
+      <button type="submit" class="primary">Join the waitlist</button>
       <p id="waitlist-status" role="status"></p>
     </form>
   </section>
@@ -172,10 +195,11 @@ TEMPLATE = """<!doctype html>
     <h2>Questions</h2>
     {faq}
   </section>
-</main>
+</div>
 
 <footer><div class="wrap">
-  FlipMath is a free tool for resellers and isn't affiliated with eBay, Poshmark, Mercari, Depop or Etsy. Fees change; always check your marketplace's current fee page. The calculator runs in your browser and doesn't send what you type anywhere.
+  <a class="logo small" href="{home}"><span class="mark">$</span><span>Flip<b>Math</b></span></a>
+  <p>A free tool for resellers. Not affiliated with eBay, Poshmark, Mercari, Depop or Etsy. Fees change, so check your marketplace's fee page before big decisions.</p>
 </div></footer>
 </body>
 </html>
@@ -193,11 +217,10 @@ def build():
     for slug, page in PAGES.items():
         base = "../" if slug else ""
         nav = " ".join(
-            '<a href="{}{}/"{}>{}</a>'.format(base, key, ' aria-current="page"' if key == slug else "", name)
+            '<a href="{}{}/"{}>{}</a>'.format(base, key, ' aria-current="page"' if key == slug else "", name + " fees")
             for key, name in PLATFORM_NAV
         )
-        focus = '<section class="card" id="focus-result" aria-live="polite"></section>' if page.get("platform") else ""
-        faq = "\n    ".join("<h3>{}</h3><p>{}</p>".format(esc(q), esc(a)) for q, a in page["faq"])
+        faq = "\n    ".join("<details><summary>{}</summary><p>{}</p></details>".format(esc(q), esc(a)) for q, a in page["faq"])
         out = TEMPLATE.format(
             title=esc(page["title"]),
             description=esc(page["description"]),
@@ -207,7 +230,6 @@ def build():
             base=base,
             home=base or "./",
             nav=nav,
-            focus=focus,
             faq=faq,
             slug=slug or "home",
         )

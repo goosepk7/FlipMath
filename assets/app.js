@@ -166,49 +166,49 @@
     var i = readInputs(state.form);
     var results = Object.keys(PLATFORMS).map(function (k) { return calculate(k, state.fees, i); });
     results.sort(function (a, b) { return b.profit - a.profit; });
-
-    var focus = state.focus ? results.filter(function (r) { return r.key === state.focus; })[0] : null;
-    var focusBox = $("#focus-result");
-    if (focusBox && focus) {
-      focusBox.innerHTML =
-        '<div class="big-label">Your ' + focus.name + " profit</div>" +
-        '<div class="big-number ' + (focus.profit < 0 ? "neg" : "pos") + '">' + money(focus.profit) + "</div>" +
-        '<div class="muted">' + focus.name + " fees " + money(focus.totalFees) +
-        " &middot; payout " + money(focus.payout) +
-        " &middot; most you should pay " + money(Math.max(0, focus.maxBuy)) + "</div>";
-    }
-
     var best = results[0];
-    var rows = results.map(function (r) {
-      var breakdown = r.lines.map(function (l) { return l[0] + " " + money(l[1]); }).join(", ");
-      if (r.shipCost > 0) breakdown += ", your label " + money(r.shipCost);
-      var cls = [];
-      if (r === best && i.price > 0) cls.push("best");
-      if (r.key === state.focus) cls.push("focus");
-      return (
-        '<tr class="' + cls.join(" ") + '">' +
-        '<th scope="row">' + r.name + (r === best && i.price > 0 ? ' <span class="tag">Best</span>' : "") +
-        '<div class="breakdown">' + breakdown + "</div></th>" +
-        "<td>" + money(r.totalFees) + "</td>" +
-        '<td class="' + (r.profit < 0 ? "neg" : "pos") + '">' + money(r.profit) + "</td>" +
-        "<td class=\"col-margin\">" + r.margin.toFixed(0) + "%</td>" +
-        "<td>" + money(Math.max(0, r.maxBuy)) + "</td>" +
-        "</tr>"
-      );
-    });
-    $("#results-body").innerHTML = rows.join("");
+    var worst = results[results.length - 1];
+    var hasPrice = i.price > 0;
 
-    var summary = $("#summary");
-    if (summary) {
-      if (i.price <= 0) {
-        summary.textContent = "Enter a sale price to compare platforms.";
-      } else {
-        var worst = results[results.length - 1];
-        summary.innerHTML =
-          "<strong>" + best.name + "</strong> nets you the most: " + money(best.profit) +
-          ". That is " + money(best.profit - worst.profit) + " more than " + worst.name + ".";
-      }
+    // On a platform page the hero shows that platform; on the home page, the winner.
+    var hero = (state.focus && results.filter(function (r) { return r.key === state.focus; })[0]) || best;
+    var heroBox = $("#hero-result");
+    if (heroBox) {
+      var label = state.focus
+        ? "You keep on " + hero.name
+        : hasPrice ? "Sell it on " + hero.name + " and keep" : "Enter a sale price";
+      var sub = !hasPrice ? "" : state.focus && hero !== best
+        ? best.name + " would net you " + money(best.profit - hero.profit) + " more."
+        : "That's " + money(best.profit - worst.profit) + " more than " + worst.name + ".";
+      heroBox.className = "hero-result p-" + hero.key;
+      heroBox.innerHTML =
+        '<div class="hero-label">' + label + "</div>" +
+        '<div class="hero-number ' + (hero.profit < 0 ? "neg" : "") + '">' + (hasPrice ? money(hero.profit) : "$0.00") + "</div>" +
+        '<div class="hero-sub">' + sub + "</div>" +
+        '<div class="hero-stats">' +
+        "<div><span>Fees</span><strong>" + money(hero.totalFees) + "</strong></div>" +
+        "<div><span>Payout</span><strong>" + money(hero.payout) + "</strong></div>" +
+        "<div><span>Max buy</span><strong>" + money(Math.max(0, hero.maxBuy)) + "</strong></div>" +
+        "</div>";
     }
+
+    var top = Math.max(best.profit, 0.01);
+    $("#results-list").innerHTML = results.map(function (r, idx) {
+      var width = Math.max(0, Math.min(100, (r.profit / top) * 100));
+      var breakdown = r.lines.map(function (l) { return "<li><span>" + l[0] + "</span><span>" + money(l[1]) + "</span></li>"; }).join("");
+      if (r.shipCost > 0) breakdown += "<li><span>Your shipping label</span><span>" + money(r.shipCost) + "</span></li>";
+      if (PLATFORMS[r.key].buyerPaysLabel) breakdown += "<li><span>Shipping</span><span>buyer pays</span></li>";
+      return (
+        '<li class="row p-' + r.key + (idx === 0 && hasPrice ? " is-best" : "") + (r.key === state.focus ? " is-focus" : "") + '">' +
+        '<details><summary>' +
+        '<span class="rank">' + (idx + 1) + "</span>" +
+        '<span class="pname">' + r.name + (idx === 0 && hasPrice ? ' <em class="tag">Best</em>' : "") + "</span>" +
+        '<span class="profit ' + (r.profit < 0 ? "neg" : "") + '">' + money(r.profit) + "</span>" +
+        '<span class="bar"><span style="width:' + width.toFixed(1) + '%"></span></span>' +
+        '<span class="meta">Fees ' + money(r.totalFees) + " &middot; " + r.margin.toFixed(0) + "% margin &middot; max buy " + money(Math.max(0, r.maxBuy)) + "</span>" +
+        "</summary><ul class=\"breakdown\">" + breakdown + "</ul></details></li>"
+      );
+    }).join("");
 
     syncUrl(state.form);
   }
@@ -309,6 +309,14 @@
     form.addEventListener("input", function () { render(state); });
     form.addEventListener("submit", function (e) { e.preventDefault(); });
     render(state);
+
+    Array.prototype.forEach.call(document.querySelectorAll("[data-example]"), function (btn) {
+      btn.addEventListener("click", function () {
+        var vals = JSON.parse(btn.dataset.example);
+        Object.keys(vals).forEach(function (k) { if (form.elements[k]) form.elements[k].value = vals[k]; });
+        render(state);
+      });
+    });
 
     var share = $("#share");
     if (share) {
